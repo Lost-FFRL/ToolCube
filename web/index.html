@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线小工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding-top: 10px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+            text-align: left;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e8e8e8;
+            width: 100%;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: #f5f7fa;
+        }
+        .tab {
+            padding: 10px 30px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            background: #f5f7fa;
+            border: none;
+            position: relative;
+            transition: all 0.2s;
+            margin-right: 0;
+            color: #666;
+            border-bottom: 2px solid transparent;
+        }
+        .tab.active {
+            color: #1890ff;
+            font-weight: 600;
+            border-bottom: 2px solid #1890ff;
+        }
+        .tab:hover {
+            color: #40a9ff;
+        }
+        .tab-content {
+            display: none;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            margin-top: 10px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .section {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #eee;
+        }
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #333;
+        }
+        .box {
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .form-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .form-row:last-child {
+            margin-bottom: 0;
+        }
+        .form-row label {
+            width: 120px;
+            flex-shrink: 0;
+        }
+        .input-group {
+            flex: 1;
+            display: flex;
+        }
+        input, textarea, select {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: #1890ff;
+        }
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+            font-family: monospace;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+            margin-left: 8px;
+        }
+        button:hover {
+            background-color: #40a9ff;
+        }
+        button.copy {
+            background-color: #52c41a;
+        }
+        button.copy:hover {
+            background-color: #73d13d;
+        }
+        .error {
+            color: #f5222d;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+        .timestamp-now {
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 16px;
+        }
+        .radio-group {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .radio-group input {
+            margin-right: 6px;
+            width: auto;
+            flex: none;
+        }
+        .json-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>在线小工具</h1>
+        </div>
+        <div class="tabs">
+            <button class="tab active" data-tab="timestamp">时间戳转换</button>
+            <button class="tab" data-tab="json">JSON格式化</button>
+        </div>
+        
+        <!-- 时间戳转换 -->
+        <div id="timestamp" class="tab-content active">
+            <div class="section">
+                <h2>当前时间</h2>
+                <div class="box">
+                    <div class="form-row" style="flex-direction: column; gap: 8px; align-items: flex-start;">
+                        <div style="display: flex; align-items: center; white-space: nowrap; justify-content: flex-start; text-align: left;">
+                            <label style="width:auto;">当前日期时间：</label>
+                            <div id="current-datetime" class="timestamp-now">加载中...</div>
+                            <button class="copy" id="copy-current-datetime" style="margin-left:8px;">复制</button>
+                            <span id="tip-current-datetime" style="color:#52c41a; margin-left:8px; display:none;"></span>
+                        </div>
+                        <div style="display: flex; align-items: center; white-space: nowrap; justify-content: flex-start; text-align: left;">
+                            <label style="width:auto;">当前时间戳(秒)：</label>
+                            <div id="current-timestamp-seconds" class="timestamp-now">加载中...</div>
+                            <button class="copy" id="copy-current-timestamp-seconds" style="margin-left:8px;">复制</button>
+                            <span id="tip-current-timestamp-seconds" style="color:#52c41a; margin-left:8px; display:none;"></span>
+                        </div>
+                        <div style="display: flex; align-items: center; white-space: nowrap; justify-content: flex-start; text-align: left;">
+                            <label style="width:auto;">当前时间戳(毫秒)：</label>
+                            <div id="current-timestamp-milliseconds" class="timestamp-now">加载中...</div>
+                            <button class="copy" id="copy-current-timestamp-milliseconds" style="margin-left:8px;">复制</button>
+                            <span id="tip-current-timestamp-milliseconds" style="color:#52c41a; margin-left:8px; display:none;"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>时间戳转日期时间</h2>
+                <div class="box">
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="timestamp-type" value="seconds" checked> 秒级时间戳
+                        </label>
+                        <label>
+                            <input type="radio" name="timestamp-type" value="milliseconds"> 毫秒级时间戳
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label>输入时间戳：</label>
+                        <div class="input-group">
+                            <input type="number" id="timestamp-input" placeholder="请输入时间戳">
+                            <button id="convert-timestamp">转换</button>
+                        </div>
+                    </div>
+                    <span id="tip-timestamp-input" style="color:#f5222d; margin-left:128px; display:none;"></span>
+                    <div class="form-row">
+                        <label>转换结果：</label>
+                        <div class="input-group">
+                            <input type="text" id="timestamp-result" readonly>
+                            <button class="copy" id="copy-datetime">复制</button>
+                            <span id="tip-timestamp-result" style="color:#52c41a; margin-left:8px; display:none;"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>日期时间转时间戳</h2>
+                <div class="box">
+                    <div class="form-row">
+                        <label>输入日期时间：</label>
+                        <div class="input-group">
+                            <input type="datetime-local" id="datetime-input" step="1">
+                            <button id="convert-datetime">转换</button>
+                        </div>
+                    </div>
+                    <span id="tip-datetime-input" style="color:#f5222d; margin-left:128px; display:none;"></span>
+                    <div class="form-row">
+                        <label>时间戳(秒)：</label>
+                        <div class="input-group">
+                            <input type="text" id="datetime-result-seconds" readonly>
+                            <button class="copy" id="copy-timestamp-seconds">复制</button>
+                            <span id="tip-datetime-result-seconds" style="color:#52c41a; margin-left:8px; display:none;"></span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label>时间戳(毫秒)：</label>
+                        <div class="input-group">
+                            <input type="text" id="datetime-result-milliseconds" readonly>
+                            <button class="copy" id="copy-timestamp-milliseconds">复制</button>
+                            <span id="tip-datetime-result-milliseconds" style="color:#52c41a; margin-left:8px; display:none;"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- JSON格式化 -->
+        <div id="json" class="tab-content">
+            <div class="json-buttons">
+                <button id="format-json">格式化</button>
+                <button id="compress-json">压缩</button>
+                <button id="validate-json">验证</button>
+                <button id="clear-json">清空</button>
+                <button class="copy" id="copy-json">复制</button>
+            </div>
+            <textarea id="json-input" placeholder="请输入JSON字符串..."></textarea>
+            <span id="tip-json-input" style="color:#f5222d; display:none;"></span>
+            <div id="json-error" class="error"></div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化和工具函数
+        function $(id) {
+            return document.getElementById(id);
+        }
+        
+        function formatDate(date) {
+            const pad = (num) => String(num).padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+        }
+        
+        function copyToClipboard(text, tipElem) {
+            try {
+                // 使用Clipboard API
+                if (navigator.clipboard && document.hasFocus()) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        if (tipElem) {
+                            tipElem.textContent = '已复制';
+                            tipElem.style.display = 'inline-block';
+                            setTimeout(() => {
+                                tipElem.textContent = '';
+                                tipElem.style.display = 'none';
+                            }, 2000);
+                        }
+                    }).catch(err => {
+                        console.error('复制失败:', err);
+                        // 如果Clipboard API失败，使用备用方法
+                        fallbackCopy(text, tipElem);
+                    });
+                } else {
+                    // 如果没有Clipboard API或页面没有焦点，使用备用方法
+                    fallbackCopy(text, tipElem);
+                }
+            } catch (err) {
+                console.error('复制失败:', err);
+                fallbackCopy(text, tipElem);
+            }
+        }
+
+        function fallbackCopy(text, tipElem) {
+            // 创建临时输入框
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            
+            // 选择文本并复制
+            tempInput.select();
+            document.execCommand('copy');
+            
+            // 移除临时输入框
+            document.body.removeChild(tempInput);
+            
+            if (tipElem) {
+                tipElem.textContent = '已复制';
+                tipElem.style.display = 'inline-block';
+                setTimeout(() => {
+                    tipElem.textContent = '';
+                    tipElem.style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        // 标签切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // 更新标签状态
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // 更新内容显示
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                $(tabId).classList.add('active');
+            });
+        });
+
+        // 实时更新当前时间和时间戳
+        function updateCurrentTime() {
+            const now = new Date();
+            const timestampSeconds = Math.floor(now.getTime() / 1000);
+            const timestampMilliseconds = now.getTime();
+            
+            $('current-datetime').textContent = formatDate(now);
+            $('current-timestamp-seconds').textContent = timestampSeconds;
+            $('current-timestamp-milliseconds').textContent = timestampMilliseconds;
+        }
+        
+        setInterval(updateCurrentTime, 1000);
+        updateCurrentTime();
+
+        // 通用错误提示函数
+        function showErrorTip(elem, msg) {
+            if (!elem) return;
+            elem.textContent = msg;
+            elem.style.display = 'block';
+            elem.style.color = '#f5222d';
+            setTimeout(() => {
+                elem.textContent = '';
+                elem.style.display = 'none';
+            }, 2000);
+        }
+
+        // 时间戳转日期
+        $('convert-timestamp').addEventListener('click', () => {
+            const timestampInput = $('timestamp-input').value.trim();
+            const tipElem = document.getElementById('tip-timestamp-input');
+            if (!timestampInput) {
+                showErrorTip(tipElem, '请输入时间戳');
+                return;
+            }
+            try {
+                let timestamp = parseInt(timestampInput);
+                let isMilliseconds = document.querySelector('input[name="timestamp-type"]:checked').value === 'milliseconds';
+                if (!isMilliseconds && timestamp.toString().length >= 13) {
+                    showErrorTip(tipElem, '您输入的似乎是毫秒级时间戳，请切换到毫秒');
+                    return;
+                } else if (isMilliseconds && timestamp.toString().length <= 10) {
+                    showErrorTip(tipElem, '您输入的似乎是秒级时间戳，请切换到秒');
+                    return;
+                }
+                if (!isMilliseconds) {
+                    timestamp *= 1000;
+                }
+                const date = new Date(timestamp);
+                $('timestamp-result').value = formatDate(date);
+            } catch (error) {
+                showErrorTip(tipElem, '转换失败，请检查输入的时间戳是否正确');
+            }
+        });
+
+        // 日期转时间戳
+        $('convert-datetime').addEventListener('click', () => {
+            const datetimeInput = $('datetime-input').value;
+            const tipElem = document.getElementById('tip-datetime-input');
+            if (!datetimeInput) {
+                showErrorTip(tipElem, '请选择日期时间');
+                return;
+            }
+            try {
+                const date = new Date(datetimeInput);
+                const timestampMilliseconds = date.getTime();
+                const timestampSeconds = Math.floor(timestampMilliseconds / 1000);
+                $('datetime-result-seconds').value = timestampSeconds;
+                $('datetime-result-milliseconds').value = timestampMilliseconds;
+            } catch (error) {
+                showErrorTip(tipElem, '转换失败，请检查输入的日期时间是否正确');
+            }
+        });
+
+        // 复制按钮功能
+        $('copy-datetime').addEventListener('click', () => {
+            copyToClipboard($('timestamp-result').value, document.getElementById('tip-timestamp-result'));
+        });
+        
+        $('copy-timestamp-seconds').addEventListener('click', () => {
+            copyToClipboard($('datetime-result-seconds').value, document.getElementById('tip-datetime-result-seconds'));
+        });
+        
+        $('copy-timestamp-milliseconds').addEventListener('click', () => {
+            copyToClipboard($('datetime-result-milliseconds').value, document.getElementById('tip-datetime-result-milliseconds'));
+        });
+        
+        $('copy-json').addEventListener('click', () => {
+            copyToClipboard($('json-input').value, document.getElementById('tip-json-input'));
+        });
+
+        // JSON功能
+        $('format-json').addEventListener('click', () => {
+            const jsonInput = $('json-input').value.trim();
+            const tipElem = document.getElementById('tip-json-input');
+            if (!jsonInput) {
+                showErrorTip(tipElem, '请输入JSON字符串');
+                return;
+            }
+            try {
+                const parsedJson = JSON.parse(jsonInput);
+                $('json-input').value = JSON.stringify(parsedJson, null, 2);
+                $('json-error').textContent = '';
+            } catch (error) {
+                $('json-error').textContent = `JSON解析错误: ${error.message}`;
+            }
+        });
+        
+        $('compress-json').addEventListener('click', () => {
+            const jsonInput = $('json-input').value.trim();
+            const tipElem = document.getElementById('tip-json-input');
+            if (!jsonInput) {
+                showErrorTip(tipElem, '请输入JSON字符串');
+                return;
+            }
+            try {
+                const parsedJson = JSON.parse(jsonInput);
+                $('json-input').value = JSON.stringify(parsedJson);
+                $('json-error').textContent = '';
+            } catch (error) {
+                $('json-error').textContent = `JSON解析错误: ${error.message}`;
+            }
+        });
+        
+        $('validate-json').addEventListener('click', () => {
+            const jsonInput = $('json-input').value.trim();
+            const tipElem = document.getElementById('tip-json-input');
+            if (!jsonInput) {
+                showErrorTip(tipElem, '请输入JSON字符串');
+                return;
+            }
+            try {
+                JSON.parse(jsonInput);
+                $('json-error').textContent = '√ JSON格式正确';
+                $('json-error').style.color = '#52c41a';
+            } catch (error) {
+                $('json-error').textContent = `× JSON格式错误: ${error.message}`;
+                $('json-error').style.color = '#f5222d';
+            }
+        });
+        
+        $('clear-json').addEventListener('click', () => {
+            $('json-input').value = '';
+            $('json-error').textContent = '';
+        });
+
+        // 初始化当前日期时间选择器的值
+        window.addEventListener('load', () => {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            $('datetime-input').value = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+        });
+
+        // 复制当前时间三项
+        $('copy-current-datetime').addEventListener('click', () => {
+            copyToClipboard($('current-datetime').textContent, document.getElementById('tip-current-datetime'));
+        });
+        $('copy-current-timestamp-seconds').addEventListener('click', () => {
+            copyToClipboard($('current-timestamp-seconds').textContent, document.getElementById('tip-current-timestamp-seconds'));
+        });
+        $('copy-current-timestamp-milliseconds').addEventListener('click', () => {
+            copyToClipboard($('current-timestamp-milliseconds').textContent, document.getElementById('tip-current-timestamp-milliseconds'));
+        });
+    </script>
+</body>
+</html>
